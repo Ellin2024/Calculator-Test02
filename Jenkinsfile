@@ -27,7 +27,7 @@ pipeline {
 		
 		stage('Checkout'){
 			steps {
-				git branch: 'main', url: 'https://github.com/Ellin2024/Calculator-Test.git'
+				git branch: 'main', url: 'https://github.com/Ellin2024/Calculator-Test02.git'
 			}
 		}
 		
