@@ -61,7 +61,7 @@ pipeline {
 
         stage('Push to Docker Hub') {
             steps {
-                sh 'docker push $DOCKER_IMAGE'
+                sh 'docker push ellinhugo/calculator:3.0'
             }
         }
         
