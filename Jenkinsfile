@@ -47,20 +47,12 @@ pipeline {
             }
         }
 	    
-      	stage('Login to Docker Hub') {
+      	stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh 'docker login -u $USER -p $PASS'
+                    sh 'docker push ellinhugo/calculator:3.0'
                 }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                sh 'docker push ellinhugo/calculator:3.0'
             }
         }
         
