@@ -20,9 +20,10 @@ public class CalculatorController
     public Integer calculate(
             @RequestParam Integer a,
             @RequestParam Integer b
-
+ 
     ) 
 	{
-        return calculatorService.add(a, b);
+		System.out.println("Successful");        
+		return calculatorService.add(a, b);
     }
 }
