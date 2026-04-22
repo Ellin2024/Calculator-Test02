@@ -31,48 +31,6 @@ pipeline {
 			}
 		}
 		
-		stage('Unit Test'){
-			steps{
-				sh 'mvn test'	
-			}
-			 post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-					// jacoco execPattern: 'target/jacoco.exec', classPattern: 'target/classes', sourcePattern: 'src/main/java', inclusionPattern: '**/*.class'
-                }
-            }
-		}
-
-		// stage('JaCoCo Report') {
-  //           steps {
-  //               sh 'mvn jacoco:report'
-  //           }
-  //       }
-
-		stage('JaCoCo Report') {
-            steps {
-                // Publish JaCoCo HTML report in Jenkins
-                publishHTML([
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: true,
-                    keepAll: true,
-                    reportDir: 'target/site/jacoco',
-                    reportFiles: 'index.html',
-                    reportName: 'JaCoCo Coverage'
-                ])
-            }
-        }
-        stage("Static Code Analysis (Checkstyle)") {
-            steps {
-                sh "mvn checkstyle:checkstyle"
-                publishHTML(target: [
-                    reportDir: 'target/site',
-                    reportFiles: 'checkstyle.html',
-                    reportName: 'Checkstyle Report'
-                ])
-            }
-        }
-		
 		stage('Build Jar'){
 			steps{
 				 sh 'mvn clean package -DskipTests'
@@ -84,74 +42,35 @@ pipeline {
             steps {
                 script {
                     // Build Docker image and tag it with build number
-                  sh "docker build --no-cache -t ${IMAGE_NAME}:${BUILD_TAG_VERSION} ."
+                  sh "docker build -t ellinhugo/calculator:3.0 ."
                 }
             }
         }
-	
-		//Without using Env
-		// stage('Build Docker Image') {
-  //           steps {
-  //               script {
-  //                   // Build Docker image and tag it with build number
-  //                   def imageTag = "${env.BUILD_NUMBER}"
-  //                   sh "docker build -t yym-calcu-image:v1 ."
-  //                   env.IMAGE_TAG = imageTag
-  //               }
-  //           }
-  //       }
-        
-        //Old Ver
-    //     stage('Run Docker Container') {
-    //     steps {
-    //         echo 'Running container locally (port 7070)...'
-    //         sh '''
-    //             docker stop yym-calcu-container || true
-    //             docker rm yym-calcu-container || true
-    //             docker run -d --name yym-calcu-conatiner -p 7070:8080 yym-calcu-image:v1
-    //         '''
-    //     }    
-    // }
+	    
+      	stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-cred',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                }
+            }
+        }
 
-		//New Ver 
-		stage("Run Docker Container") {
+        stage('Push to Docker Hub') {
             steps {
-                script {
-                    // Stop/remove existing container if it exists
-                    def containerExists = sh(script: "docker ps -aq -f name=${CONTAINER_NAME}", returnStdout: true).trim()
-                    if (containerExists) {
-                        sh "docker stop ${CONTAINER_NAME} || true"
-                        sh "docker rm ${CONTAINER_NAME} || true"
-                    }
-                    // Run new container safely
-                    def runStatus = sh(script: "docker run -d --name ${CONTAINER_NAME} -p 8082:8080 ${IMAGE_NAME}:${BUILD_TAG_VERSION}", returnStatus: true)
-                    if (runStatus != 0) {
-                        echo "⚠️ Docker run failed, check logs"
-                    } else {
-                        echo "✅ Docker container ${CONTAINER_NAME} deployed successfully"
-                    }
-                }
+                sh 'docker push $DOCKER_IMAGE'
             }
         }
         
-        stage('Acceptance Test') {
+        stage('Deploy to Kubernetes') {
             steps {
-                sh 'bash acceptance_test.sh'
-            }
-            post {
-                always {
-                    // Make sure this folder matches your Maven configuration
-                    junit allowEmptyResults: true, testResults: 'target/acceptance-reports/*.xml'
-        
-                    publishHTML(target: [
-                        allowMissing: true,
-                        keepAll: true,
-                        alwaysLinkToLastBuild: true,
-                        reportDir: 'target',
-                        reportFiles: 'cucumber-report.html',
-                        reportName: 'Acceptance Report'
-                    ])
-                }
+                sh '''
+                kubectl apply -f deployment.yaml
+                kubectl apply -f service.yaml
+                '''
             }
         }
 	}
