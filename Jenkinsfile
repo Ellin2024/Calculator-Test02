@@ -62,11 +62,8 @@ pipeline {
         
        stage('Deploy to Kubernetes') {
             steps {
-                sh 'kubectl apply -f hazelcast.yaml --validate=false'
-
-                sh 'kubectl rollout status deployment/hazelcast'
         withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]){
-          sh 'kubectl apply -f hazelcast.yaml'
+          
                   sh 'kubectl apply -f deployment.yaml'
                   sh 'kubectl apply -f service.yaml'
                 }
