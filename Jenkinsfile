@@ -48,13 +48,17 @@ pipeline {
         }
 	    
       	stage('Push to Docker Hub') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh 'docker login -u $USER -p $PASS'
-                    sh 'docker push ellinhugo/calculator:3.0'
-                }
+        steps {
+            withCredentials([usernamePassword(
+                credentialsId: 'dockerhub',
+                usernameVariable: 'USER',
+                passwordVariable: 'PASS'
+            )]) {
+                sh 'docker login -u $USER -p $PASS'
+                sh 'docker push ellinhugo/calculator:3.0'
             }
         }
+    }
         
         stage('Deploy to Kubernetes') {
             steps {
