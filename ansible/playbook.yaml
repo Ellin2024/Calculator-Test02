@@ -1,14 +1,12 @@
----
 - name: Deploy to Kubernetes
   hosts: all
-  become: false
 
   environment:
     KUBECONFIG: /var/jenkins_home/.kube/config
 
   tasks:
-    - name: Apply Kubernetes Deployment
-      ansible.builtin.shell: kubectl apply -f ../deployment.yaml
+    - name: Apply deployment
+      shell: kubectl apply -f ../deployment.yaml
 
-    - name: Apply Kubernetes Service
-      ansible.builtin.shell: kubectl apply -f ../service.yaml
+    - name: Apply service
+      shell: kubectl apply -f ../service.yaml
