@@ -60,13 +60,9 @@ pipeline {
         }
     }
         
-       stage('Deploy to Kubernetes') {
+      	stage('Deploy with Ansible') {
             steps {
-        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]){
-          		  sh 'kubectl apply -f hazelcast.yaml'
-                  sh 'kubectl apply -f deployment.yaml'
-                  sh 'kubectl apply -f service.yaml'
-                }
+                sh 'ansible-playbook ansible-lab/playbook.yaml -i ansible-lab/inventory'
             }
         }
 	}
