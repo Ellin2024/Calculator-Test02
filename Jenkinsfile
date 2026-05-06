@@ -62,7 +62,7 @@ pipeline {
         
       	stage('Deploy with Ansible') {
             steps {
-                sh 'ansible-playbook ansible-lab/playbook.yaml -i ansible-lab/inventory'
+                sh 'ansible-playbook ansible/playbook.yaml -i ansible/inventory'
             }
         }
 	}
