@@ -59,11 +59,14 @@ pipeline {
             }
         }
     }
-        stage('Deploy with Ansible') {
-            steps {
-                sh 'ansible-playbook ansible/playbook.yaml -i ansible/inventory'
-            }
+        stage('Deploy to Kubernetes') {
+    	steps {
+        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+            sh 'kubectl apply -f deployment.yaml --validate=false'
+            sh 'kubectl apply -f service.yaml'
         }
+    }
+}
       	
 	}
 	 post {
