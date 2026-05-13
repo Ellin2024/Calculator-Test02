@@ -1,13 +1,11 @@
 ---
 - name: Deploy to Kubernetes
-  hosts: all
-
-  environment:
-    KUBECONFIG: /var/jenkins_home/.kube/config
+  hosts: localhost
+  gather_facts: false
 
   tasks:
     - name: Apply deployment
-      shell: kubectl apply -f ../deployment.yaml
+      shell: kubectl apply -f {{ playbook_dir }}/../deployment.yaml --validate=false
 
     - name: Apply service
-      shell: kubectl apply -f ../service.yaml
+      shell: kubectl apply -f {{ playbook_dir }}/../service.yaml --validate=false
