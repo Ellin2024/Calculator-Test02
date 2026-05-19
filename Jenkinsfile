@@ -78,6 +78,7 @@ pipeline {
                     )
                 ]) {
                     sh '''
+                    kubectl config current-context
                 	kubectl apply -f deployment-dev.yaml --validate=false
                     kubectl apply -f service.yaml --validate=false
                     '''
